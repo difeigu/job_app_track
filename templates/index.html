@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Application Tracker</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-left">
+    <h1>📋 Job Application Tracker</h1>
+  </div>
+  <div class="topbar-right">
+    <button id="exportBtn" class="btn">⬇ Export PDF</button>
+    <button id="addBtn" class="btn btn-primary">+ Add Application</button>
+  </div>
+</header>
+
+<section class="stats-bar" id="statsBar"></section>
+
+<section class="toolbar">
+  <input type="search" id="searchInput" placeholder="Search title, company, location, tags…" />
+  <select id="statusFilter">
+    <option value="">All statuses</option>
+  </select>
+  <select id="sortSelect">
+    <option value="created_desc">Newest added</option>
+    <option value="created_asc">Oldest added</option>
+    <option value="applied_desc">Recently applied</option>
+    <option value="deadline_asc">Deadline soonest</option>
+    <option value="company_asc">Company (A–Z)</option>
+    <option value="rating_desc">Highest rated</option>
+  </select>
+</section>
+
+<main id="cardsGrid" class="cards-grid"></main>
+<div id="emptyState" class="empty-state" hidden>
+  <p>No applications yet. Paste a job link to get started.</p>
+</div>
+
+<!-- Add Application Modal -->
+<div id="addModal" class="modal-backdrop" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Add Application</h2>
+      <button class="icon-btn close-modal" data-close="addModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="hint">Paste the job posting link. We'll analyze the page and pull in the title, company, location, salary, and more automatically.</p>
+      <input type="url" id="addUrlInput" placeholder="https://…" autofocus />
+      <div id="addStatus" class="scrape-status" hidden></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" data-close="addModal">Cancel</button>
+      <button id="addSubmitBtn" class="btn btn-primary">Fetch &amp; Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail / Edit Modal -->
+<div id="detailModal" class="modal-backdrop" hidden>
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2 id="detailTitle">Application</h2>
+      <button class="icon-btn close-modal" data-close="detailModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="detailScrapeNotice" class="scrape-status" hidden></div>
+      <div class="detail-grid">
+        <section class="detail-section">
+          <h3>Job Info</h3>
+          <label>Job Title <input type="text" id="f_title" /></label>
+          <label>Company <input type="text" id="f_company" /></label>
+          <label>Application Link <input type="url" id="f_url" /></label>
+          <label>Location <input type="text" id="f_location" /></label>
+          <div class="field-row">
+            <label>Work Mode
+              <select id="f_work_mode">
+                <option value="">—</option>
+                <option>Remote</option>
+                <option>Hybrid</option>
+                <option>Onsite</option>
+              </select>
+            </label>
+            <label>Employment Type
+              <select id="f_employment_type">
+                <option value="">—</option>
+                <option>Full-time</option>
+                <option>Part-time</option>
+                <option>Contract</option>
+                <option>Internship</option>
+                <option>Temporary</option>
+              </select>
+            </label>
+          </div>
+          <label>Source <input type="text" id="f_source" /></label>
+          <label>Tags (comma separated) <input type="text" id="f_tags" /></label>
+          <label>Description <textarea id="f_description" rows="5"></textarea></label>
+        </section>
+
+        <section class="detail-section">
+          <h3>Compensation</h3>
+          <div class="field-row">
+            <label>Min Salary <input type="number" id="f_salary_min" /></label>
+            <label>Max Salary <input type="number" id="f_salary_max" /></label>
+          </div>
+          <div class="field-row">
+            <label>Currency <input type="text" id="f_salary_currency" placeholder="USD" /></label>
+            <label>Period
+              <select id="f_salary_period">
+                <option value="">—</option>
+                <option>Year</option>
+                <option>Month</option>
+                <option>Hour</option>
+              </select>
+            </label>
+          </div>
+
+          <h3>Status &amp; Dates</h3>
+          <label>Status
+            <select id="f_status"></select>
+          </label>
+          <div class="field-row">
+            <label>Date Posted <input type="date" id="f_date_posted" /></label>
+            <label>Deadline <input type="date" id="f_deadline" /></label>
+          </div>
+          <div class="field-row">
+            <label>Applied Date <input type="date" id="f_applied_date" /></label>
+            <label>Rating
+              <select id="f_rating">
+                <option value="">—</option>
+                <option value="1">★☆☆☆☆</option>
+                <option value="2">★★☆☆☆</option>
+                <option value="3">★★★☆☆</option>
+                <option value="4">★★★★☆</option>
+                <option value="5">★★★★★</option>
+              </select>
+            </label>
+          </div>
+          <label>Next Action <input type="text" id="f_next_action" placeholder="e.g. Follow up with recruiter" /></label>
+          <label>Next Action Date <input type="date" id="f_next_action_date" /></label>
+
+          <h3>Contact</h3>
+          <div class="field-row">
+            <label>Name <input type="text" id="f_contact_name" /></label>
+            <label>Email <input type="email" id="f_contact_email" /></label>
+          </div>
+          <label>Phone <input type="text" id="f_contact_phone" /></label>
+
+          <h3>Application Details</h3>
+          <div class="field-row">
+            <label class="checkbox-label"><input type="checkbox" id="f_referral" /> Referral</label>
+            <label class="checkbox-label"><input type="checkbox" id="f_cover_letter_used" /> Cover letter sent</label>
+          </div>
+          <label>Resume version <input type="text" id="f_resume_version" /></label>
+          <label>Notes <textarea id="f_notes" rows="3"></textarea></label>
+        </section>
+
+        <section class="detail-section timeline-section">
+          <h3>Timeline</h3>
+          <div id="timelineList" class="timeline-list"></div>
+          <div class="add-event-row">
+            <select id="eventType">
+              <option>Note</option>
+              <option>Interview</option>
+              <option>Email</option>
+              <option>Status Change</option>
+              <option>Other</option>
+            </select>
+            <input type="date" id="eventDate" />
+            <input type="text" id="eventDescription" placeholder="What happened?" />
+            <button id="addEventBtn" class="btn btn-small">Add</button>
+          </div>
+        </section>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="deleteBtn" class="btn btn-danger">Delete</button>
+      <button id="rescrapeBtn" class="btn">Re-analyze Link</button>
+      <a id="openLinkBtn" class="btn" target="_blank" rel="noopener">Open Application ↗</a>
+      <button id="saveBtn" class="btn btn-primary">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

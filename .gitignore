@@ -1,0 +1,40 @@
+# Personal application data and SQLite sidecar files
+/data/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+
+# Credentials and local settings
+.env
+.env.*
+*.pem
+*.key
+.aws/
+
+# Python environments and generated files
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+/build/
+/dist/
+/.tools/
+/.verification/
+*.log
+
+# Local scraping/debug captures
+/blob.json
+/meta.html
+
+# Editor, assistant, and operating-system files
+.idea/
+.vscode/
+.agents/
+.codex/
+.DS_Store
+Thumbs.db
