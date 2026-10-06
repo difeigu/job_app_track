@@ -4,6 +4,12 @@ A local web app for keeping job applications, contacts, follow-ups, and intervie
 
 Built with Python, Flask, SQLite, and plain HTML/CSS/JavaScript. No account, API key, or external database service is needed.
 
+## Interface
+
+![Job Application Tracker interface showing sample application cards, status counters, and search controls](docs/images/application-interface.png)
+
+The screenshot uses fictional demo applications and contains no personal application data.
+
 ## Features
 
 - Analyze a posting link for its title, company, location, description, work mode, employment type, salary, and dates when available.

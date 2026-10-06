@@ -19,6 +19,7 @@ $publicFiles = @(
     'templates/index.html',
     'static/css/style.css',
     'static/js/app.js',
+    'docs/images/application-interface.png',
     'scripts/package.ps1'
 )
 
